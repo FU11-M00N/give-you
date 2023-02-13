@@ -39,5 +39,13 @@ class User extends Sequelize.Model {
          },
       );
    }
+   static associate(db) {
+      db.User.hasMany(db.Post);
+      db.User.belongsToMany(db.Post, {
+         through: 'PostLike',
+         as: 'Liked',
+      });
+      db.User.hasOne(db.Comment); // 1:N 유저, 댓글
+   }
 }
 module.exports = User;

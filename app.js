@@ -1,7 +1,8 @@
 const express = require('express');
-var bodyParser = require('body-parser');
+
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 
 const morgan = require('morgan'); //logging
 const { sequelize } = require('./models');
@@ -10,11 +11,13 @@ const dotenv = require('dotenv');
 dotenv.config(); // process.env
 const passport = require('passport');
 const authRouter = require('./routes/auth');
+const postRouter = require('./routes/post');
+const commentRouter = require('./routes/comment');
+const searchRouter = require('./routes/search');
 const passportConfig = require('./passport');
 
 const app = express();
 passportConfig();
-app.use(express.json());
 
 app.set('port', process.env.PORT || 7010);
 
@@ -29,6 +32,8 @@ sequelize
       console.error(err);
    });
 app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false })); //form 요청 // req.body 폼으로부터
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(
    session({
@@ -46,8 +51,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/auth', authRouter);
-
+app.use('/post', postRouter);
+app.use('/comment', commentRouter);
+app.use('/search', searchRouter);
 app.get('/', (req, res) => {
+   res.send('test');
+});
+
+app.post('/test', (req, res) => {
    res.send('test');
 });
 

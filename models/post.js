@@ -4,6 +4,10 @@ class Post extends Sequelize.Model {
    static initiate(sequelize) {
       Post.init(
          {
+            title: {
+               type: Sequelize.STRING(50),
+               allowNull: false,
+            },
             content: {
                type: Sequelize.STRING(150),
                allowNull: false,
@@ -11,6 +15,11 @@ class Post extends Sequelize.Model {
             img: {
                type: Sequelize.STRING(200),
                allowNull: true,
+            },
+            hit: {
+               type: Sequelize.INTEGER,
+               allowNull: false,
+               defaultValue: 0,
             },
          },
          {
@@ -24,6 +33,17 @@ class Post extends Sequelize.Model {
             collate: 'utf8_general_ci',
          },
       );
+   }
+   static associate(db) {
+      db.Post.belongsTo(db.User);
+      db.Post.belongsToMany(db.User, {
+         through: 'PostLike',
+         as: 'Liker',
+      });
+      db.Post.belongsToMany(db.Hashtag, {
+         through: 'PostHashtag',
+      });
+      db.Post.hasOne(db.Comment);
    }
 }
 

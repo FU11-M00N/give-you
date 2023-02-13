@@ -11,7 +11,6 @@ module.exports = () => {
          },
          async (accessToken, refreshToken, profile, done) => {
             try {
-               console.log('profile', profile);
                const ExUser = await User.findOne({
                   where: { snsId: profile.id, provider: 'kakao' },
                });
@@ -21,7 +20,7 @@ module.exports = () => {
                   await User.create({
                      email: profile._json?.kakao_account?.email,
                      nick: profile.displayName,
-                     snsId: profile._id,
+                     snsId: profile.id,
                      provider: 'kakao',
                   });
                }

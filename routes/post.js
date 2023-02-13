@@ -3,13 +3,14 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { isLoggedIn } = require('../middlewares');
-const { afterUploadImage, likePost, unlikePost } = require('../controllers/post');
+const { afterUploadImage, likePost, unlikePost, uploadPost, getPost, getPosts } = require('../controllers/post');
 
 const router = express.Router();
+
 try {
    fs.readdirSync('uploads');
 } catch (error) {
-   console.error('uploads 폴더가 없는 경우 "uploads" 폴더 생성');
+   console.error('uploads 폴더 생성');
    fs.mkdirSync('uploads');
 }
 
@@ -26,7 +27,7 @@ const upload = multer({
    storage: multer.diskStorage({
       //폴더 경로 지정
       destination: (req, file, done) => {
-         done(null, '/uploads');
+         done(null, 'uploads/');
       },
       filename: (req, file, done) => {
          const ext = path.extname(file.originalname);
@@ -39,7 +40,9 @@ const upload = multer({
 });
 
 router.post('/img', isLoggedIn, upload.single('img'), afterUploadImage);
-
+router.post('/', isLoggedIn, upload.single('img'), uploadPost);
+router.get('/:id', getPost);
+router.get('/', getPosts);
 router.get('/:id/like', isLoggedIn, likePost);
 router.delete('/:id/unlike', isLoggedIn, unlikePost);
 
