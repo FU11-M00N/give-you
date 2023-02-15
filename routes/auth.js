@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const { isLoggedIn, isNotLoggedIn, corsWhenDomainMatcher } = require('../middlewares');
+const { isLoggedIn, isNotLoggedIn } = require('../middlewares');
 const { join, login } = require('../controllers/auth');
-
-router.use(corsWhenDomainMatcher);
 
 router.post('/join', isNotLoggedIn, join);
 router.post('/login', isNotLoggedIn, login);

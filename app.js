@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan'); //logging
 const { sequelize } = require('./models');
 
+const cors = require('cors');
+
 const dotenv = require('dotenv');
 dotenv.config(); // process.env
 const passport = require('passport');
@@ -22,6 +24,12 @@ passportConfig();
 app.set('port', process.env.PORT || 7010);
 
 app.use(morgan('dev')); // 개발모드 logging
+
+app.use(
+   cors({
+      origin: 'true',
+   }),
+);
 
 sequelize
    .sync({ force: false }) // 개발 시 true 배포 시 false

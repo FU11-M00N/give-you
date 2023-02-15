@@ -15,17 +15,3 @@ exports.isNotLoggedIn = (req, res, next) => {
       res.redirect(`/?error=${message}`);
    }
 };
-
-exports.corsWhenDomainMatcher = async (req, res, next) => {
-   const domain = await Domain.fineOne({
-      where: { host: new URL(req.get('origin').host) },
-   });
-   if (domain) {
-      cors({
-         origin: req.get('origin'),
-         credentials: true,
-      })(req, res, next);
-   } else {
-      next();
-   }
-};
