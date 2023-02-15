@@ -33,7 +33,7 @@ exports.hashtagSearch = async (req, res, next) => {
    // select p.content, p.id from posts p join PostHashtag ph on p.id = ph.postId join hashtags h on ph.hashtagId=h.id
    // where h.title="강아지";
    // 1. 유저에게서 검색 키워드 가져옴
-   // 2. 가져온 키워드로 해시태그를 찾아온다. ( 객체 형식으로 가져오게 됨 )
+   // 2. 가져온 키워드로 해시태그를 찾아온다. ( 객체 타입 )
    // 3. 해당 해시태그를 가진 Post 들을 가져온다.
    try {
       const query = req.query.hashtag; // 강아지

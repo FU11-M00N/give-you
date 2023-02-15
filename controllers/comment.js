@@ -70,11 +70,12 @@ exports.uploadCommentReply = async (req, res, next) => {
          await Comment.create({
             content: req.body.content,
             class: comment.class,
-            order: (comment.order = comment.order + 1),
+            order: (await Comment.max('order')) + 1,
             PostId: req.params.id,
             UserId: req.user.id,
          });
       }
+      res.send('success');
    } catch (error) {
       console.log(error);
       next(error);
