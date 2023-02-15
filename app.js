@@ -25,11 +25,7 @@ app.set('port', process.env.PORT || 7010);
 
 app.use(morgan('dev')); // 개발모드 logging
 
-app.use(
-   cors({
-      origin: 'true',
-   }),
-);
+app.use(cors()); // 배포 시 도메인 추가 필요
 
 sequelize
    .sync({ force: false }) // 개발 시 true 배포 시 false
