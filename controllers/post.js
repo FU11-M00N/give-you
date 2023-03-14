@@ -10,6 +10,14 @@ exports.afterUploadImage = (req, res) => {
    }
 };
 
+// exports.updatePost = async (req, res, next) => {
+//    try{
+//       await Post.destory
+//    }catch(error){
+//       console.log(error);
+//    }
+// }
+
 exports.uploadPost = async (req, res, next) => {
    try {
       const post = await Post.create({

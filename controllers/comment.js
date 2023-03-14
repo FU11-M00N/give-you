@@ -2,6 +2,8 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const Hashtag = require('../models/hashtag');
 const Comment = require('../models/comment');
+const Sequelize = require('sequelize');
+const { sum } = require('../models/post');
 
 // 1. post, comment join
 // 2. comment, user join
@@ -26,55 +28,54 @@ exports.uploadComment = async (req, res, next) => {
 };
 // a 댓글
 
-// class : 댓글 그룹 , order : 그룹 내 순서 , groupnumber : 댓글 그룹 내 댓글 개수
+// class : 댓글 그룹 , order : 그룹 내 순서
 
 // a 댓글 작성
-// class 1 order 1 groupnumber 1
+// class 1 order 1
 // a 댓글의 대댓글
-// class 1 order 2 groupnumber 2
+// class 1 order 2
 // b 댓글 작성
-// class 2 order 1 groupnumber 1
+// class 2 order 1
 // a 댓글의 대댓글의 대댓글
-// class 1 order 3 groupnumber 3
+// class 1 order 3
 // a 댓글의 새로운 댓글
-// class 1 order 2 groupnumber 4
+// class 1 order 2
 
 // select order from comments where Comment id = req.params.id
 // update comments set order = order + 1 where
 
 // order === 1{
 //  order = order + 1,
-// groupNumber = groupNumber + 1;
 //}
 exports.uploadCommentReply = async (req, res, next) => {
    try {
       console.log('요청 파라미터 확인', req.params);
       const comment = await Comment.findOne({
-         // select order from comments where Comment id = req.params.id
+         // select order, class from comments where Comment id = req.params.id
          where: { id: req.params.Commentid },
          attributes: ['class', 'order'],
       });
 
-      if (comment.order === 0) {
-         // 대댓글이 존재하지 않을 시
-         await Comment.create({
-            content: req.body.content,
-            class: comment.class, // 새로운 댓글이 들어왔을때 class는 +1
-            order: 1,
-            PostId: req.params.id,
-            UserId: req.user.id,
-         });
-      } else {
-         // 대댓글이 이미 존재 할 때 | class 0 order 1 groupNumber 1 일 때
-         // order랑 groupNumber + 1
-         await Comment.create({
-            content: req.body.content,
-            class: comment.class,
-            order: (await Comment.max('order')) + 1,
-            PostId: req.params.id,
-            UserId: req.user.id,
-         });
-      }
+      // 대댓글이 이미 존재 할 때 | class 0 order 1
+      // order랑 + 1
+      // class 가 뭔지 확인하고, max +1
+
+      // select max(order) from comment where class = comment.class
+      const commentOrder = await Comment.findOne({
+         group: 'class',
+         attributes: [[Sequelize.fn('max', Sequelize.col('order')), 'order_max']],
+         having: { class: comment.class },
+      });
+      let findMaxOrder = commentOrder.dataValues.order_max;
+      findMaxOrder = findMaxOrder + 1;
+      await Comment.create({
+         content: req.body.content,
+         class: comment.class,
+         order: findMaxOrder,
+         PostId: req.params.id,
+         UserId: req.user.id,
+      });
+
       res.send('success');
    } catch (error) {
       console.log(error);

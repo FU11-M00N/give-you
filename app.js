@@ -2,12 +2,10 @@ const express = require('express');
 
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const bodyParser = require('body-parser');
+const redis = require('redis');
 
 const morgan = require('morgan'); //logging
 const { sequelize } = require('./models');
-
-const cors = require('cors');
 
 const dotenv = require('dotenv');
 dotenv.config(); // process.env
@@ -16,16 +14,23 @@ const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const commentRouter = require('./routes/comment');
 const searchRouter = require('./routes/search');
+const userRouter = require('./routes/user');
+
+const cors = require('cors');
 const passportConfig = require('./passport');
 
 const app = express();
+const corsConfig = {
+   origin: 'http://172.30.1.92:3000',
+   credentials: true,
+};
+
+app.use(cors(corsConfig));
 passportConfig();
 
 app.set('port', process.env.PORT || 7010);
 
 app.use(morgan('dev')); // 개발모드 logging
-
-app.use(cors()); // 배포 시 도메인 추가 필요
 
 sequelize
    .sync({ force: false }) // 개발 시 true 배포 시 false
@@ -58,6 +63,8 @@ app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/comment', commentRouter);
 app.use('/search', searchRouter);
+app.use('/user', userRouter);
+
 app.get('/', (req, res) => {
    res.send('test');
 });
