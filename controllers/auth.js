@@ -84,7 +84,7 @@ exports.join = async (req, res, next) => {
          });
          return res.redirect('/');
       } else {
-         res.status(400).json({ errors });
+         res.status(400).json(errors);
       }
    } catch (error) {
       console.error(error);
@@ -104,8 +104,8 @@ exports.login = async (req, res, next) => {
          return next(authError);
       }
       if (!user) {
-         console.log('로그인 정보 불일치');
-         return res.redirect(`/?loginError=${info.message}`);
+         console.log(info);
+         return res.status(400).json(info);
       }
       // done(null, exUser)가 처리 된 경우(로그인 성공) passport/index.js로 가서 실행
       return req.login(user, loginError => {
@@ -113,7 +113,9 @@ exports.login = async (req, res, next) => {
             console.error(loginError);
             return next(loginError);
          }
-         return res.send('login success');
+
+         const loginUser = { email: user.email, nick: user.nick, provider: user.provider };
+         return res.status(200).json({ loginUser });
       });
    })(req, res, next);
 };

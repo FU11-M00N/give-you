@@ -22,10 +22,14 @@ module.exports = () => {
                      //로그인 성공
                      done(null, exUser);
                   } else {
-                     done(null, false, { message: '비밀번호가 일치하지 않습니다. ' });
+                     done(null, false, {
+                        password: '아이디 또는 비밀번호를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요. ',
+                     });
                   }
                } else {
-                  done(null, false, { message: '가입되지 않은 회원입니다.' });
+                  done(null, false, {
+                     password: '아이디 또는 비밀번호를 잘못 입력했습니다. 입력하신 내용을 다시 확인해주세요.',
+                  });
                }
             } catch (error) {
                console.error(error);

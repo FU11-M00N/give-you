@@ -3,7 +3,8 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const redis = require('redis');
-
+const http = require('http');
+const https = require('https');
 const morgan = require('morgan'); //logging
 const { sequelize } = require('./models');
 
@@ -15,13 +16,14 @@ const postRouter = require('./routes/post');
 const commentRouter = require('./routes/comment');
 const searchRouter = require('./routes/search');
 const userRouter = require('./routes/user');
+const fs = require('fs');
 
 const cors = require('cors');
 const passportConfig = require('./passport');
 
 const app = express();
 const corsConfig = {
-   origin: 'http://172.30.1.92:3000',
+   origin: 'http://172.30.1.72:3000',
    credentials: true,
 };
 
@@ -50,9 +52,13 @@ app.use(
       saveUninitialized: false,
       secret: process.env.COOKIE_SECRET,
       cookie: {
-         httpOnly: true,
-         secure: false,
+         httpOnly: false,
+         secure: true,
+         path: '/',
+         maxAge: 60 * 60 * 24 * 7,
+         sameSite: 'None',
       },
+      name: 'token',
    }),
 );
 
@@ -65,7 +71,13 @@ app.use('/comment', commentRouter);
 app.use('/search', searchRouter);
 app.use('/user', userRouter);
 
+const options = {
+   key: fs.readFileSync('config/172.30.1.8-key.pem'),
+   cert: fs.readFileSync('config/172.30.1.8.pem'),
+};
+
 app.get('/', (req, res) => {
+   res.cookie('test', 'test2');
    res.send('test');
 });
 
@@ -86,6 +98,14 @@ app.use((err, req, res, next) => {
    res.send('error');
 });
 
-app.listen(app.get('port'), () => {
-   console.log(app.get('port'), '번 포트에서 대기중');
+http.createServer(options, app).listen(7010, () => {
+   console.log('HTTPS server started on port 7010');
 });
+
+https.createServer(options, app).listen(7011, () => {
+   console.log('HTTPS server started on port 7011');
+});
+
+// app.listen(app.get('port'), () => {
+//    console.log(app.get('port'), '번 포트에서 대기중');
+// });
