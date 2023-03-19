@@ -12,22 +12,80 @@ const axios = require('axios');
 
 const randomBytes = require('crypto').randomBytes(3);
 
+async function emailCheck(email, errors) {
+   console.log('test');
+   const regex = /[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+   if (!regex.test(email)) {
+      errors.email = '이메일 형식이 올바르지 않습니다.';
+   }
+   if (email.length >= 40) {
+      errors.email = '이메일 길이가 초과되었담.';
+   }
+   const user = await User.findOne({
+      where: { email },
+   });
+
+   if (user) {
+      errors.email = '중복된 이메일 입니다.';
+   }
+}
+// select nick from user where = req.nick
+async function nickCheck(nick, errors) {
+   const user = await User.findOne({
+      where: { nick },
+   });
+
+   if (user) {
+      errors.nick = '닉네임이 중복되었습니다.';
+   }
+   if (nick.length >= 15) {
+      errors.nick = '닉네임 길이가 초과되었습니다.';
+   }
+}
+
+function passwordCheck(password, errors) {
+   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/;
+   if (!regex.test(password)) {
+      errors.password = '패스워드는 대소문자 1자 이상, 숫자 1자, 특수문자 1자 이상으로 8자 이상 작성해주시기 바랍니다.';
+   }
+   if (password.length >= 15) {
+      errors.password = '패스워드는 최소 8자 최대 15자로 작성해주시기 바랍니다.';
+   }
+}
+
+function phoneNumCheck(phoneNum, errors) {
+   const regex = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/;
+   if (!regex.test(phoneNum)) {
+      errors.phoneNum = '전화번호 형식이 일치하지 않습니다.';
+   }
+}
+
 exports.join = async (req, res, next) => {
    const { email, nick, password, phoneNum } = req.body;
 
    try {
-      const exUser = await User.findOne({ where: { email } });
-      if (exUser) {
-         return res.redirect('/join?error=exist');
+      const errors = {};
+      await emailCheck(email, errors);
+      await nickCheck(nick, errors);
+      passwordCheck(password, errors);
+      phoneNumCheck(phoneNum, errors);
+
+      if (Object.keys(errors).length === 0) {
+         const exUser = await User.findOne({ where: { email } });
+         if (exUser) {
+            return res.redirect('/join?error=exist');
+         }
+         const hash = await bcrypt.hash(password, 12);
+         await User.create({
+            email,
+            nick,
+            password: hash,
+            phoneNum,
+         });
+         return res.redirect('/');
+      } else {
+         res.status(400).json({ errors });
       }
-      const hash = await bcrypt.hash(password, 12);
-      await User.create({
-         email,
-         nick,
-         password: hash,
-         phoneNum,
-      });
-      return res.redirect('/');
    } catch (error) {
       console.error(error);
    }
@@ -46,6 +104,7 @@ exports.login = async (req, res, next) => {
          return next(authError);
       }
       if (!user) {
+         console.log('로그인 정보 불일치');
          return res.redirect(`/?loginError=${info.message}`);
       }
       // done(null, exUser)가 처리 된 경우(로그인 성공) passport/index.js로 가서 실행
